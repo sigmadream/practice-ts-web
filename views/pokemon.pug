@@ -1,0 +1,151 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      h1.mb-4
+        i.fas.fa-list.me-2
+        | 포켓몬 목록
+      
+      // 검색 및 필터 폼
+      .card.mb-4
+        .card-body
+          form#searchForm.row.g-3
+            .col-md-3
+              label.form-label(for="search") 검색어
+              input#search.form-control(type="text", name="search", placeholder="포켓몬 이름 또는 설명", value=(query && query.search) || "")
+            .col-md-2
+              label.form-label(for="type") 타입
+              select#type.form-select(name="type")
+                option(value="", selected=!query || !query.type) 모든 타입
+                option(value="불꽃", selected=query && query.type === "불꽃") 불꽃
+                option(value="물", selected=query && query.type === "물") 물
+                option(value="풀", selected=query && query.type === "풀") 풀
+                option(value="전기", selected=query && query.type === "전기") 전기
+                option(value="에스퍼", selected=query && query.type === "에스퍼") 에스퍼
+                option(value="얼음", selected=query && query.type === "얼음") 얼음
+                option(value="드래곤", selected=query && query.type === "드래곤") 드래곤
+                option(value="악", selected=query && query.type === "악") 악
+                option(value="페어리", selected=query && query.type === "페어리") 페어리
+                option(value="노말", selected=query && query.type === "노말") 노말
+                option(value="격투", selected=query && query.type === "격투") 격투
+                option(value="비행", selected=query && query.type === "비행") 비행
+                option(value="독", selected=query && query.type === "독") 독
+                option(value="땅", selected=query && query.type === "땅") 땅
+                option(value="바위", selected=query && query.type === "바위") 바위
+                option(value="벌레", selected=query && query.type === "벌레") 벌레
+                option(value="고스트", selected=query && query.type === "고스트") 고스트
+                option(value="강철", selected=query && query.type === "강철") 강철
+            .col-md-2
+              label.form-label(for="sortBy") 정렬 기준
+              select#sortBy.form-select(name="sortBy")
+                option(value="id", selected=query && query.sortBy === "id") ID
+                option(value="name", selected=query && query.sortBy === "name") 이름
+                option(value="pokedex_number", selected=query && query.sortBy === "pokedex_number") 도감번호
+            .col-md-2
+              label.form-label(for="sortOrder") 정렬 순서
+              select#sortOrder.form-select(name="sortOrder")
+                option(value="ASC", selected=query && query.sortOrder === "ASC") 오름차순
+                option(value="DESC", selected=query && query.sortOrder === "DESC") 내림차순
+            .col-md-2
+              label.form-label(for="limit") 페이지당 항목
+              select#limit.form-select(name="limit")
+                option(value="20", selected=query && query.limit === 20) 20개
+                option(value="50", selected=query && query.limit === 50) 50개
+                option(value="100", selected=query && query.limit === 100) 100개
+            .col-md-1.d-flex.align-items-end
+              button.btn.btn-primary(type="submit")
+                i.fas.fa-search.me-1
+                | 검색
+
+  // 페이지네이션 정보
+  if pagination
+    .row.mb-3
+      .col-12
+        .alert.alert-info
+          i.fas.fa-info-circle.me-2
+          | 총 #{pagination.total}개의 포켓몬 중 #{((pagination.page - 1) * pagination.limit) + 1}-#{Math.min(pagination.page * pagination.limit, pagination.total)}번째 표시 중 (페이지 #{pagination.page}/#{pagination.totalPages})
+
+  // 포켓몬 목록
+  .row#pokemonList
+    if pokemon && pokemon.length > 0
+      each pokemonItem in pokemon
+        .col-md-4.col-lg-3.mb-4
+          .card.pokemon-card.h-100
+            .card-body
+              h6.card-title= pokemonItem.name
+              p.card-text
+                small.text-muted ##{pokemonItem.pokedex_number}
+                br
+                span.badge.bg-primary.type-badge= pokemonItem.types
+              p.card-text.small= pokemonItem.description || '설명 없음'
+              .d-flex.justify-content-between
+                small.text-muted 키: #{pokemonItem.height}m
+                small.text-muted 무게: #{pokemonItem.weight}kg
+            .card-footer
+              a.btn.btn-sm.btn-outline-primary(href=`/pokemon/${pokemonItem.id}`) 상세보기
+    else
+      .col-12
+        .alert.alert-info 검색 결과가 없습니다.
+
+  // 페이지네이션
+  nav.mt-4#pagination
+    if pagination && pagination.totalPages > 1
+      ul.pagination.justify-content-center
+        // 이전 페이지
+        if pagination.page > 1
+          li.page-item
+            a.page-link(href=`/pokemon?page=${pagination.page - 1}&search=${(query && query.search) || ''}&type=${(query && query.type) || ''}&sortBy=${(query && query.sortBy) || 'id'}&sortOrder=${(query && query.sortOrder) || 'ASC'}&limit=${(query && query.limit) || 20}`) 이전
+        
+        // 페이지 번호들
+        - let startPage = Math.max(1, pagination.page - 2)
+        - let endPage = Math.min(pagination.totalPages, pagination.page + 2)
+        
+        if startPage > 1
+          li.page-item
+            a.page-link(href=`/pokemon?page=1&search=${(query && query.search) || ''}&type=${(query && query.type) || ''}&sortBy=${(query && query.sortBy) || 'id'}&sortOrder=${(query && query.sortOrder) || 'ASC'}&limit=${(query && query.limit) || 20}`) 1
+          if startPage > 2
+            li.page-item.disabled
+              span.page-link ...
+        
+        - for (let i = startPage; i <= endPage; i++)
+          li.page-item(class={active: i === pagination.page})
+            a.page-link(href=`/pokemon?page=${i}&search=${(query && query.search) || ''}&type=${(query && query.type) || ''}&sortBy=${(query && query.sortBy) || 'id'}&sortOrder=${(query && query.sortOrder) || 'ASC'}&limit=${(query && query.limit) || 20}`)= i
+        
+        if endPage < pagination.totalPages
+          if endPage < pagination.totalPages - 1
+            li.page-item.disabled
+              span.page-link ...
+          li.page-item
+            a.page-link(href=`/pokemon?page=${pagination.totalPages}&search=${(query && query.search) || ''}&type=${(query && query.type) || ''}&sortBy=${(query && query.sortBy) || 'id'}&sortOrder=${(query && query.sortOrder) || 'ASC'}&limit=${(query && query.limit) || 20}`)= pagination.totalPages
+        
+        // 다음 페이지
+        if pagination.page < pagination.totalPages
+          li.page-item
+            a.page-link(href=`/pokemon?page=${pagination.page + 1}&search=${(query && query.search) || ''}&type=${(query && query.type) || ''}&sortBy=${(query && query.sortBy) || 'id'}&sortOrder=${(query && query.sortOrder) || 'ASC'}&limit=${(query && query.limit) || 20}`) 다음
+
+block scripts
+  script.
+    // 검색 폼 제출 처리 - 서버 사이드로 리다이렉트
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const params = new URLSearchParams();
+      
+      // 폼 데이터를 URL 파라미터로 변환
+      for (let [key, value] of formData.entries()) {
+        if (value) params.append(key, value);
+      }
+      
+      // 페이지를 1로 리셋하고 서버로 리다이렉트
+      params.set('page', '1');
+      window.location.href = `/pokemon?${params.toString()}`;
+    });
+    
+    // 페이지네이션 정보 표시
+    if (typeof pagination !== 'undefined' && pagination) {
+      console.log('현재 페이지:', pagination.page);
+      console.log('총 페이지:', pagination.totalPages);
+      console.log('총 항목:', pagination.total);
+    }

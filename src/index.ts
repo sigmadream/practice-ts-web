@@ -1,10 +1,15 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import apiRoutes from './routes/api';
+import webRoutes from './routes/web';
 import { getDatabase } from './database/connection';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// PUG 템플릿 엔진 설정
+app.set('view engine', 'pug');
+app.set('views', './views');
 
 // 미들웨어 설정
 app.use(cors());
@@ -17,21 +22,16 @@ app.use((req: Request, _res: Response, next: () => void) => {
     next();
 });
 
-// 기본 라우트
+// 기본 라우트 - PUG 템플릿으로 홈페이지 렌더링
 app.get('/', (_req: Request, res: Response) => {
-    res.json({
-        message: 'Express.js 5.0 with TypeScript 서버가 실행 중입니다!',
-        version: '1.0.0',
-        timestamp: new Date().toISOString(),
-        endpoints: {
-            api: '/api',
-            health: '/api/health',
-        },
+    res.render('index', {
+        title: '포켓몬 API - 홈'
     });
 });
 
 // 라우터 설정
 app.use('/api', apiRoutes);
+app.use('/', webRoutes);
 
 // 에러 핸들링 미들웨어
 app.use((err: Error, _req: Request, res: Response, _next: () => void) => {

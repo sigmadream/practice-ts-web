@@ -140,14 +140,52 @@ export class PokemonService {
         const totalResult = await this.db.get('SELECT COUNT(*) as total FROM pokemon');
         const total = totalResult.total;
 
-        // 타입별 통계
-        const typeStats = await this.db.query(`
-      SELECT types, COUNT(*) as count 
-      FROM pokemon 
-      WHERE types IS NOT NULL AND types != ''
-      GROUP BY types 
-      ORDER BY count DESC
-    `);
+        // 모든 포켓몬의 타입 데이터 가져오기
+        const allPokemon = await this.db.query(`
+            SELECT types 
+            FROM pokemon 
+            WHERE types IS NOT NULL AND types != ''
+        `);
+
+        // 타입별 통계 계산
+        const typeCountMap = new Map<string, number>();
+
+        allPokemon.forEach(pokemon => {
+            if (!pokemon.types) return;
+
+            let typesArray: string[] = [];
+            const rawTypes = pokemon.types;
+
+            if (typeof rawTypes === 'string') {
+                // JSON 형태인지 확인 (e.g., ["타입1", "타입2"])
+                if (rawTypes.startsWith('[') && rawTypes.endsWith(']')) {
+                    try {
+                        typesArray = JSON.parse(rawTypes);
+                    } catch (e) {
+                        // 파싱 실패 시, 쉼표로 구분된 문자열로 간주 (e.g., "타입1,타입2")
+                        typesArray = rawTypes.replace(/[\[\]"]/g, '').split(',').map(t => t.trim());
+                    }
+                } else {
+                    // 쉼표로 구분된 문자열 또는 단일 문자열
+                    typesArray = rawTypes.split(',').map(t => t.trim());
+                }
+            } else if (Array.isArray(rawTypes)) {
+                typesArray = rawTypes;
+            }
+
+            // 타입별로 카운트
+            typesArray.forEach(type => {
+                if (type && typeof type === 'string' && type.trim() !== '') {
+                    const trimmedType = type.trim();
+                    typeCountMap.set(trimmedType, (typeCountMap.get(trimmedType) || 0) + 1);
+                }
+            });
+        });
+
+        // Map을 배열로 변환하고 정렬
+        const typeStats = Array.from(typeCountMap.entries())
+            .map(([type, count]) => ({ type, count }))
+            .sort((a, b) => b.count - a.count);
 
         // 카테고리별 통계
         const categoryStats = await this.db.query(`

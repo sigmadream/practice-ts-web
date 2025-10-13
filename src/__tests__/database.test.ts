@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { DatabaseConnection } from '../database/connection';
-import path from 'path';
 
 describe('DatabaseConnection', () => {
     let db: DatabaseConnection;

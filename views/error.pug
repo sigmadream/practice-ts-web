@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  .row.justify-content-center
+    .col-md-6
+      .card.border-danger
+        .card-header.bg-danger.text-white
+          h4.mb-0
+            i.fas.fa-exclamation-triangle.me-2
+            | 오류 발생
+        .card-body.text-center
+          h5.card-title= error || '알 수 없는 오류가 발생했습니다.'
+          p.card-text
+            | 요청하신 페이지를 처리하는 중 문제가 발생했습니다.
+            | 잠시 후 다시 시도해 주세요.
+          .mt-4
+            a.btn.btn-primary.me-2(href="/")
+              i.fas.fa-home.me-1
+              | 홈으로
+            a.btn.btn-secondary(href="javascript:history.back()")
+              i.fas.fa-arrow-left.me-1
+              | 이전 페이지

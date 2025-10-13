@@ -1,0 +1,303 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      h1.mb-4
+        i.fas.fa-code.me-2
+        | API 문서
+      
+      .alert.alert-info
+        i.fas.fa-info-circle.me-2
+        | 이 API는 포켓몬 데이터를 조회할 수 있는 RESTful API입니다.
+      
+      // 기본 정보
+      .card.mb-4
+        .card-header
+          h5.mb-0
+            i.fas.fa-info-circle.me-2
+            | 기본 정보
+        .card-body
+          .row
+            .col-md-6
+              h6 API 정보
+              ul.list-unstyled
+                li
+                  strong 이름: 
+                  | 포켓몬 API
+                li
+                  strong 버전: 
+                  | 1.0.0
+                li
+                  strong 기본 URL: 
+                  | http://localhost:3000/api
+                li
+                  strong 응답 형식: 
+                  | JSON
+            .col-md-6
+              h6 상태 코드
+              ul.list-unstyled
+                li
+                  span.badge.bg-success.me-2 200
+                  | 성공
+                li
+                  span.badge.bg-warning.me-2 400
+                  | 잘못된 요청
+                li
+                  span.badge.bg-danger.me-2 404
+                  | 리소스를 찾을 수 없음
+                li
+                  span.badge.bg-danger.me-2 500
+                  | 서버 오류
+      
+      // 헬스 체크
+      .card.mb-4
+        .card-header
+          h5.mb-0
+            i.fas.fa-heartbeat.me-2
+            | 헬스 체크
+        .card-body
+          .row
+            .col-md-8
+              h6 GET /api/health
+              p 서버 상태를 확인합니다.
+              pre.bg-light.p-3
+                code
+                  | GET /api/health
+                  | 
+                  | 응답:
+                  | {
+                  |   "status": "OK",
+                  |   "uptime": 1234.567,
+                  |   "timestamp": "2025-01-27T10:30:00.000Z",
+                  |   "environment": "development"
+                  | }
+            .col-md-4
+              .d-grid
+                button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/health')")
+                  i.fas.fa-play.me-2
+                  | 테스트
+      
+      // 포켓몬 API
+      .card.mb-4
+        .card-header
+          h5.mb-0
+            i.fas.fa-dragon.me-2
+            | 포켓몬 API
+        .card-body
+          // 모든 포켓몬 조회
+          .mb-4
+            h6 GET /api/pokemon
+            p 모든 포켓몬을 조회합니다. 페이지네이션, 검색, 필터링을 지원합니다.
+            .row
+              .col-md-8
+                h6 쿼리 매개변수
+                table.table.table-sm
+                  thead
+                    tr
+                      th 매개변수
+                      th 타입
+                      th 필수
+                      th 설명
+                  tbody
+                    tr
+                      td page
+                      td number
+                      td 아니오
+                      td 페이지 번호
+                    tr
+                      td limit
+                      td number
+                      td 아니오
+                      td 페이지당 항목 수
+                    tr
+                      td search
+                      td string
+                      td 아니오
+                      td 이름으로 검색
+                    tr
+                      td type
+                      td string
+                      td 아니오
+                      td 타입으로 필터링
+                    tr
+                      td sortBy
+                      td string
+                      td 아니오
+                      td 정렬 기준 (id, name, pokedex_number)
+                    tr
+                      td sortOrder
+                      td string
+                      td 아니오
+                      td 정렬 순서 (ASC, DESC)
+                pre.bg-light.p-3
+                  code
+                    | GET /api/pokemon?page=1&limit=20&search=피카츄&type=전기&sortBy=name&sortOrder=ASC
+              .col-md-4
+                .d-grid
+                  button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/pokemon')")
+                    i.fas.fa-play.me-2
+                    | 테스트
+          
+          // ID로 포켓몬 조회
+          .mb-4
+            h6 GET /api/pokemon/:id
+            p ID로 특정 포켓몬을 조회합니다.
+            .row
+              .col-md-8
+                pre.bg-light.p-3
+                  code
+                    | GET /api/pokemon/1
+                    | 
+                    | 응답:
+                    | {
+                    |   "success": true,
+                    |   "data": {
+                    |     "id": 1,
+                    |     "name": "피카츄",
+                    |     "pokedex_number": "025",
+                    |     "type": "전기",
+                    |     "category": "쥐포켓몬",
+                    |     "height": "0.4m",
+                    |     "weight": "6.0kg"
+                    |   }
+                    | }
+              .col-md-4
+                .d-grid
+                  button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/pokemon/1')")
+                    i.fas.fa-play.me-2
+                    | 테스트
+          
+          // 도감 번호로 조회
+          .mb-4
+            h6 GET /api/pokemon/pokedex/:number
+            p 도감 번호로 포켓몬을 조회합니다.
+            .row
+              .col-md-8
+                pre.bg-light.p-3
+                  code
+                    | GET /api/pokemon/pokedex/025
+              .col-md-4
+                .d-grid
+                  button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/pokemon/pokedex/025')")
+                    i.fas.fa-play.me-2
+                    | 테스트
+          
+          // 이름으로 검색
+          .mb-4
+            h6 GET /api/pokemon/search/name/:name
+            p 이름으로 포켓몬을 검색합니다.
+            .row
+              .col-md-8
+                pre.bg-light.p-3
+                  code
+                    | GET /api/pokemon/search/name/피카츄
+              .col-md-4
+                .d-grid
+                  button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/pokemon/search/name/피카츄')")
+                    i.fas.fa-play.me-2
+                    | 테스트
+          
+          // 타입별 조회
+          .mb-4
+            h6 GET /api/pokemon/type/:type
+            p 특정 타입의 포켓몬을 조회합니다.
+            .row
+              .col-md-8
+                pre.bg-light.p-3
+                  code
+                    | GET /api/pokemon/type/전기
+              .col-md-4
+                .d-grid
+                  button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/pokemon/type/전기')")
+                    i.fas.fa-play.me-2
+                    | 테스트
+          
+          // 통계 조회
+          .mb-4
+            h6 GET /api/pokemon/stats/overview
+            p 포켓몬 통계를 조회합니다.
+            .row
+              .col-md-8
+                pre.bg-light.p-3
+                  code
+                    | GET /api/pokemon/stats/overview
+                    | 
+                    | 응답:
+                    | {
+                    |   "success": true,
+                    |   "data": {
+                    |     "total": 1200,
+                    |     "byType": [...],
+                    |     "byCategory": [...]
+                    |   }
+                    | }
+              .col-md-4
+                .d-grid
+                  button.btn.btn-outline-primary(type="button" onclick="testEndpoint('/api/pokemon/stats/overview')")
+                    i.fas.fa-play.me-2
+                    | 테스트
+      
+      // 응답 예시
+      .card.mb-4
+        .card-header
+          h5.mb-0
+            i.fas.fa-code.me-2
+            | 응답 예시
+        .card-body
+          .row
+            .col-md-6
+              h6 성공 응답
+              pre.bg-light.p-3
+                code
+                  | {
+                  |   "success": true,
+                  |   "data": { ... },
+                  |   "pagination": {
+                  |     "page": 1,
+                  |     "limit": 20,
+                  |     "total": 1200,
+                  |     "totalPages": 60
+                  |   }
+                  | }
+            .col-md-6
+              h6 오류 응답
+              pre.bg-light.p-3
+                code
+                  | {
+                  |   "success": false,
+                  |   "error": "오류 메시지"
+                  | }
+      
+      // API 테스트 결과
+      .card.mb-4
+        .card-header
+          h5.mb-0
+            i.fas.fa-flask.me-2
+            | API 테스트 결과
+        .card-body
+          #testResult.alert.alert-info(style="display: none;")
+            h6 테스트 결과
+            pre#testOutput.mb-0
+
+block scripts
+  script.
+    // API 테스트 함수
+    function testEndpoint(endpoint) {
+      const testResult = document.getElementById('testResult');
+      const testOutput = document.getElementById('testOutput');
+      
+      testResult.style.display = 'block';
+      testOutput.textContent = '요청 중...';
+      
+      fetch(endpoint)
+        .then(response => response.json())
+        .then(data => {
+          testOutput.textContent = JSON.stringify(data, null, 2);
+          testResult.className = 'alert alert-success';
+        })
+        .catch(error => {
+          testOutput.textContent = '오류: ' + error.message;
+          testResult.className = 'alert alert-danger';
+        });
+    }

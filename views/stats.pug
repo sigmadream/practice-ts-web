@@ -1,0 +1,137 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      h1.mb-4
+        i.fas.fa-chart-bar.me-2
+        | 포켓몬 통계
+      
+      if stats
+        // 통계 요약
+        .row
+          .col-md-4
+            .card.text-center
+              .card-body
+                h2.text-primary= stats.total.toLocaleString()
+                p.card-text 총 포켓몬 수
+          .col-md-4
+            .card.text-center
+              .card-body
+                h2.text-success= stats.byType.length
+                p.card-text 포켓몬 타입 수
+          .col-md-4
+            .card.text-center
+              .card-body
+                h2.text-info= stats.byCategory.length
+                p.card-text 카테고리 수
+        
+        // 차트 섹션
+        .row.mt-4
+          .col-md-6
+            .card
+              .card-header
+                h5.mb-0 타입별 분포
+              .card-body
+                canvas#typeChart(width="400" height="300")
+          .col-md-6
+            .card
+              .card-header
+                h5.mb-0 카테고리별 분포
+              .card-body
+                canvas#categoryChart(width="400" height="300")
+        
+        // 상세 통계 테이블
+        .row.mt-4
+          .col-md-12
+            .card
+              .card-header
+                h5.mb-0 타입별 상세 통계
+              .card-body
+                .table-responsive
+                  table.table.table-sm
+                    thead
+                      tr
+                        th 타입
+                        th 개수
+                        th 비율
+                    tbody
+                      each typeStat in stats.byType
+                        tr
+                          td
+                            span.badge.bg-primary= typeStat.type
+                          td= typeStat.count
+                          td= ((typeStat.count / stats.total) * 100).toFixed(1) + '%'
+      else
+        .alert.alert-danger 통계 데이터를 불러올 수 없습니다.
+
+block scripts
+  script.
+    // 서버에서 전달받은 통계 데이터를 JavaScript 변수로 설정
+    const statsData = !{JSON.stringify(stats)};
+    
+    // 서버에서 전달받은 통계 데이터로 차트 렌더링
+    document.addEventListener('DOMContentLoaded', function() {
+      if (statsData && statsData.byType && statsData.byCategory) {
+        renderCharts();
+      }
+    });
+    
+    // 차트 렌더링
+    function renderCharts() {
+      // Chart.js를 사용한 차트 렌더링
+      if (typeof Chart !== 'undefined' && statsData) {
+        // 타입별 차트 데이터 준비
+        const typeLabels = statsData.byType.map(item => item.type);
+        const typeData = statsData.byType.map(item => item.count);
+        
+        // 카테고리별 차트 데이터 준비
+        const categoryLabels = statsData.byCategory.map(item => item.category);
+        const categoryData = statsData.byCategory.map(item => item.count);
+        
+        // 타입별 차트
+        const typeCtx = document.getElementById('typeChart').getContext('2d');
+        new Chart(typeCtx, {
+          type: 'doughnut',
+          data: {
+            labels: typeLabels,
+            datasets: [{
+              data: typeData,
+              backgroundColor: [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+        
+        // 카테고리별 차트
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+          type: 'bar',
+          data: {
+            labels: categoryLabels,
+            datasets: [{
+              label: '포켓몬 수',
+              data: categoryData,
+              backgroundColor: '#36A2EB'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+    }
