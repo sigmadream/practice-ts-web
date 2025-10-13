@@ -1,6 +1,7 @@
 // src/routes/api.ts
 
 import { Router, Request, Response } from 'express';
+import pokemonRoutes from './pokemon';
 
 const router = Router();
 
@@ -23,8 +24,12 @@ router.get('/info', (_req: Request, res: Response) => {
     endpoints: {
       health: '/api/health',
       info: '/api/info',
+      pokemon: '/api/pokemon',
     },
   });
 });
+
+// 포켓몬 라우트
+router.use('/pokemon', pokemonRoutes);
 
 export default router;

@@ -1,0 +1,160 @@
+import { Router, Request, Response } from 'express';
+import { PokemonService, PokemonQuery } from '../services/pokemonService';
+import { getDatabase } from '../database/connection';
+
+const router = Router();
+const pokemonService = new PokemonService(getDatabase());
+
+// 모든 포켓몬 조회 (페이지네이션, 검색, 필터링 지원)
+router.get('/', async (req: Request, res: Response) => {
+    try {
+        const query: PokemonQuery = {
+            page: req.query.page ? parseInt(req.query.page as string) : undefined,
+            limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+            search: req.query.search as string,
+            type: req.query.type as string,
+            sortBy: req.query.sortBy as 'id' | 'name' | 'pokedex_number',
+            sortOrder: req.query.sortOrder as 'ASC' | 'DESC'
+        };
+
+        const result = await pokemonService.getAllPokemon(query);
+
+        res.json({
+            success: true,
+            data: result.pokemon,
+            pagination: {
+                page: result.page,
+                limit: result.limit,
+                total: result.total,
+                totalPages: Math.ceil(result.total / result.limit)
+            }
+        });
+    } catch (error) {
+        console.error('포켓몬 목록 조회 실패:', error);
+        res.status(500).json({
+            success: false,
+            error: '포켓몬 목록을 조회하는 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// ID로 포켓몬 조회
+router.get('/:id', async (req: Request, res: Response) => {
+    try {
+        const id = parseInt(req.params.id);
+
+        if (isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                error: '유효하지 않은 ID입니다.'
+            });
+        }
+
+        const pokemon = await pokemonService.getPokemonById(id);
+
+        if (!pokemon) {
+            return res.status(404).json({
+                success: false,
+                error: '포켓몬을 찾을 수 없습니다.'
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: pokemon
+        });
+    } catch (error) {
+        console.error('포켓몬 조회 실패:', error);
+        return res.status(500).json({
+            success: false,
+            error: '포켓몬을 조회하는 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// 포켓몬 도감 번호로 조회
+router.get('/pokedex/:number', async (req: Request, res: Response) => {
+    try {
+        const pokedexNumber = req.params.number;
+        const pokemon = await pokemonService.getPokemonByPokedexNumber(pokedexNumber);
+
+        if (!pokemon) {
+            return res.status(404).json({
+                success: false,
+                error: '포켓몬을 찾을 수 없습니다.'
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: pokemon
+        });
+    } catch (error) {
+        console.error('포켓몬 조회 실패:', error);
+        return res.status(500).json({
+            success: false,
+            error: '포켓몬을 조회하는 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// 포켓몬 이름으로 검색
+router.get('/search/name/:name', async (req: Request, res: Response) => {
+    try {
+        const name = req.params.name;
+        const pokemon = await pokemonService.searchPokemonByName(name);
+
+        res.json({
+            success: true,
+            data: pokemon,
+            count: pokemon.length
+        });
+    } catch (error) {
+        console.error('포켓몬 검색 실패:', error);
+        res.status(500).json({
+            success: false,
+            error: '포켓몬을 검색하는 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// 타입별 포켓몬 조회
+router.get('/type/:type', async (req: Request, res: Response) => {
+    try {
+        const type = req.params.type;
+        const pokemon = await pokemonService.getPokemonByType(type);
+
+        res.json({
+            success: true,
+            data: pokemon,
+            count: pokemon.length
+        });
+    } catch (error) {
+        console.error('타입별 포켓몬 조회 실패:', error);
+        res.status(500).json({
+            success: false,
+            error: '타입별 포켓몬을 조회하는 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// 포켓몬 통계 조회
+router.get('/stats/overview', async (_req: Request, res: Response) => {
+    try {
+        const stats = await pokemonService.getPokemonStats();
+
+        res.json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        console.error('포켓몬 통계 조회 실패:', error);
+        res.status(500).json({
+            success: false,
+            error: '포켓몬 통계를 조회하는 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+
+export default router;
