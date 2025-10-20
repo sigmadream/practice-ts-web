@@ -1,0 +1,146 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      #pokemonDetail
+        .text-center
+          .spinner-border(role="status")
+            span.visually-hidden 로딩 중...
+
+block scripts
+  script.
+    let pokemonId = window.location.pathname.split('/').pop();
+    
+    // 포켓몬 상세 정보 로드
+    async function loadPokemonDetail() {
+      try {
+        const response = await axios.get(`/api/pokemon/${pokemonId}`);
+        const data = response.data;
+        
+        if (data.success) {
+          displayPokemonDetail(data.data);
+        } else {
+          document.getElementById('pokemonDetail').innerHTML = 
+            '<div class="alert alert-danger">포켓몬을 찾을 수 없습니다.</div>';
+        }
+      } catch (error) {
+        console.error('API 요청 실패:', error);
+        document.getElementById('pokemonDetail').innerHTML = 
+          '<div class="alert alert-danger">포켓몬 정보를 불러오는데 실패했습니다.</div>';
+      }
+    }
+    
+    // 포켓몬 상세 정보 표시
+    function displayPokemonDetail(pokemon) {
+      const container = document.getElementById('pokemonDetail');
+      
+      const typeBadges = pokemon.types.split(',').map(type => 
+        `<span class="badge bg-primary me-1">${type.trim()}</span>`
+      ).join('');
+      
+      const html = `
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="mb-0">
+                  ${pokemon.name}
+                  <small class="text-muted">#${pokemon.pokedex_number}</small>
+                </h2>
+              </div>
+              <div class="card-body">
+                <p class="lead">${pokemon.description || '설명이 없습니다.'}</p>
+                
+                <h5>타입</h5>
+                <p>${typeBadges}</p>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <h5>기본 정보</h5>
+                    <table class="table table-sm">
+                      <tr>
+                        <td><strong>키</strong></td>
+                        <td>${pokemon.height}m</td>
+                      </tr>
+                      <tr>
+                        <td><strong>무게</strong></td>
+                        <td>${pokemon.weight}kg</td>
+                      </tr>
+                      <tr>
+                        <td><strong>성별</strong></td>
+                        <td>${pokemon.gender}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>카테고리</strong></td>
+                        <td>${pokemon.category}</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="col-md-6">
+                    <h5>특성</h5>
+                    <p>${pokemon.abilities || '특성 정보가 없습니다.'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">관련 링크</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-grid gap-2">
+                  <a href="/pokemon" class="btn btn-outline-primary">
+                    <i class="fas fa-list me-2"></i>포켓몬 목록
+                  </a>
+                  <a href="/pokemon/search/name/${encodeURIComponent(pokemon.name)}" class="btn btn-outline-secondary">
+                    <i class="fas fa-search me-2"></i>비슷한 이름 검색
+                  </a>
+                  <a href="/pokemon/type/${encodeURIComponent(pokemon.types.split(',')[0].trim())}" class="btn btn-outline-info">
+                    <i class="fas fa-tag me-2"></i>같은 타입 포켓몬
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card mt-3">
+              <div class="card-header">
+                <h6 class="mb-0">API 정보</h6>
+              </div>
+              <div class="card-body">
+                <small class="text-muted">
+                  <strong>ID:</strong> ${pokemon.id}<br>
+                  <strong>도감번호:</strong> ${pokemon.pokedex_number}
+                </small>
+                <div class="mt-2">
+                  <button class="btn btn-sm btn-outline-secondary" onclick="copyApiUrl()">
+                    <i class="fas fa-copy me-1"></i>API URL 복사
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4">
+          <a href="/pokemon" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>목록으로 돌아가기
+          </a>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+    
+    // API URL 복사
+    function copyApiUrl() {
+      const url = `${window.location.origin}/api/pokemon/${pokemonId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('API URL이 클립보드에 복사되었습니다!');
+      });
+    }
+    
+    // 페이지 로드 시 포켓몬 정보 로드
+    document.addEventListener('DOMContentLoaded', loadPokemonDetail);

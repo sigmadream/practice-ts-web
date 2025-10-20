@@ -1,0 +1,138 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      h1.mb-4
+        i.fas.fa-heartbeat.me-2
+        | 시스템 상태
+      
+      .card.mb-4
+        .card-header.bg-success.text-white
+          h5.mb-0
+            i.fas.fa-check-circle.me-2
+            | 서버 상태
+        .card-body
+          .row
+            .col-md-6
+              .d-flex.align-items-center.mb-3
+                i.fas.fa-server.fa-2x.text-success.me-3
+                .flex-grow-1
+                  h6.mb-1 서버 상태
+                  p.mb-0.text-success
+                    i.fas.fa-check.me-1
+                    | 정상 작동 중
+              
+              .d-flex.align-items-center.mb-3
+                i.fas.fa-clock.fa-2x.text-info.me-3
+                .flex-grow-1
+                  h6.mb-1 가동 시간
+                  p.mb-0.text-info
+                    i.fas.fa-clock.me-1
+                    | #{Math.floor(uptime / 3600)}시간 #{Math.floor((uptime % 3600) / 60)}분 #{Math.floor(uptime % 60)}초
+              
+              .d-flex.align-items-center.mb-3
+                i.fas.fa-calendar.fa-2x.text-primary.me-3
+                .flex-grow-1
+                  h6.mb-1 현재 시간
+                  p.mb-0.text-primary#current-time
+                    i.fas.fa-calendar.me-1
+                    | #{new Date(timestamp).toLocaleString('ko-KR')}
+            
+            .col-md-6
+              .d-flex.align-items-center.mb-3
+                i.fas.fa-cog.fa-2x.text-warning.me-3
+                .flex-grow-1
+                  h6.mb-1 환경
+                  p.mb-0.text-warning
+                    i.fas.fa-cog.me-1
+                    | #{environment}
+              
+              .d-flex.align-items-center.mb-3
+                i.fas.fa-memory.fa-2x.text-secondary.me-3
+                .flex-grow-1
+                  h6.mb-1 메모리 사용량
+                  p.mb-0.text-secondary
+                    i.fas.fa-memory.me-1
+                    | #{Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
+              
+              .d-flex.align-items-center.mb-3
+                i.fas.fa-database.fa-2x.text-info.me-3
+                .flex-grow-1
+                  h6.mb-1 데이터베이스
+                  p.mb-0.text-info
+                    i.fas.fa-database.me-1
+                    | 연결됨
+
+  .row.mt-4
+    .col-12
+      .card
+        .card-header
+          h5.mb-0
+            i.fas.fa-chart-line.me-2
+            | 시스템 정보
+        .card-body
+          .row
+            .col-md-6
+              h6 API 엔드포인트
+              ul.list-unstyled
+                li
+                  code GET /api/health
+                  |  - 시스템 상태 확인
+                li
+                  code GET /api/info
+                  |  - API 정보
+                li
+                  code GET /api/pokemon
+                  |  - 포켓몬 목록
+                li
+                  code GET /api/pokemon/:id
+                  |  - 특정 포켓몬 조회
+            .col-md-6
+              h6 웹 페이지
+              ul.list-unstyled
+                li
+                  a(href="/") 홈페이지
+                li
+                  a(href="/pokemon") 포켓몬 목록
+                li
+                  a(href="/pokemon/stats") 통계
+                li
+                  a(href="/docs") API 문서
+
+  .row.mt-4
+    .col-12
+      .card
+        .card-header
+          h5.mb-0
+            i.fas.fa-code.me-2
+            | JSON 응답
+        .card-body
+          pre.bg-light.p-3
+            code.json
+              | {
+              |   "status": "#{status}",
+              |   "uptime": #{uptime},
+              |   "timestamp": "#{timestamp}",
+              |   "environment": "#{environment}"
+              | }
+
+block scripts
+  script.
+    // 자동 새로고침 (30초마다)
+    setTimeout(function() {
+      location.reload();
+    }, 30000);
+    
+    // 실시간 시계 업데이트
+    function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleString('ko-KR');
+      const timeElement = document.getElementById('current-time');
+      if (timeElement) {
+        timeElement.innerHTML = '<i class="fas fa-calendar me-1"></i>' + timeString;
+      }
+    }
+    
+    // 1초마다 시계 업데이트
+    setInterval(updateClock, 1000);

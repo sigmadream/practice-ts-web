@@ -1,0 +1,56 @@
+doctype html
+html(lang="ko")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title || '포켓몬 API'
+    link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+    style.
+      .pokemon-card {
+        transition: transform 0.2s;
+      }
+      .pokemon-card:hover {
+        transform: translateY(-5px);
+      }
+      .type-badge {
+        font-size: 0.8em;
+      }
+      .equal-height-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .equal-height-card .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .equal-height-card .table-responsive {
+        flex: 1;
+        overflow-y: auto;
+      }
+  body
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-primary
+      .container
+        a.navbar-brand(href="/")
+          i.fas.fa-dragon.me-2
+          | 포켓몬 API
+        .navbar-nav
+          a.nav-link(href="/") 홈
+          a.nav-link(href="/pokemon") 포켓몬 목록
+          a.nav-link(href="/pokemon/stats") 통계
+          a.nav-link(href="/docs") API 문서
+          a.nav-link(href="/health") 시스템 상태
+
+    main.container.mt-4
+      block content
+
+    footer.bg-light.mt-5.py-4
+      .container.text-center
+        p.text-muted © 2025 포켓몬 API. 모든 포켓몬 데이터는 교육 목적으로만 사용됩니다.
+
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/chart.js")
+    block scripts
