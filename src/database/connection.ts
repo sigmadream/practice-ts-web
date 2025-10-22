@@ -1,5 +1,6 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
+import logger from '../config/logger';
 
 // SQLite3 데이터베이스 연결 클래스
 export class DatabaseConnection {
@@ -15,10 +16,10 @@ export class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.db = new sqlite3.Database(this.dbPath, (err) => {
                 if (err) {
-                    console.error('데이터베이스 연결 실패:', err);
+                    logger.error('데이터베이스 연결 실패:', err);
                     reject(err);
                 } else {
-                    console.log(`데이터베이스 연결 성공: ${this.dbPath}`);
+                    logger.info(`데이터베이스 연결 성공: ${this.dbPath}`);
                     resolve();
                 }
             });
@@ -31,10 +32,10 @@ export class DatabaseConnection {
             if (this.db) {
                 this.db.close((err) => {
                     if (err) {
-                        console.error('데이터베이스 연결 해제 실패:', err);
+                        logger.error('데이터베이스 연결 해제 실패:', err);
                         reject(err);
                     } else {
-                        console.log('데이터베이스 연결 해제 성공');
+                        logger.info('데이터베이스 연결 해제 성공');
                         this.db = null;
                         resolve();
                     }
@@ -54,7 +55,7 @@ export class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.db!.all(sql, params, (err, rows) => {
                 if (err) {
-                    console.error('쿼리 실행 실패:', err);
+                    logger.error('쿼리 실행 실패:', err);
                     reject(err);
                 } else {
                     resolve(rows);
@@ -72,7 +73,7 @@ export class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.db!.get(sql, params, (err, row) => {
                 if (err) {
-                    console.error('쿼리 실행 실패:', err);
+                    logger.error('쿼리 실행 실패:', err);
                     reject(err);
                 } else {
                     resolve(row);

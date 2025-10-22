@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { PokemonService } from '../services/pokemonService';
 import { getDatabase } from '../database/connection';
+import logger from '../config/logger';
 
 const router = Router();
 const pokemonService = new PokemonService(getDatabase());
@@ -38,7 +39,7 @@ router.get('/pokemon', async (req: Request, res: Response) => {
             query: query
         });
     } catch (error) {
-        console.error('포켓몬 목록 조회 실패:', error);
+        logger.error('포켓몬 목록 조회 실패:', error);
         res.status(500).render('error', {
             title: '서버 오류',
             error: '포켓몬 목록을 불러오는 중 오류가 발생했습니다.'
@@ -56,7 +57,7 @@ router.get('/pokemon/stats', async (req: Request, res: Response) => {
             stats: stats
         });
     } catch (error) {
-        console.error('통계 데이터 조회 실패:', error);
+        logger.error('통계 데이터 조회 실패:', error);
         res.status(500).render('error', {
             title: '서버 오류',
             error: '통계 데이터를 불러오는 중 오류가 발생했습니다.'
@@ -106,7 +107,7 @@ router.get('/pokemon/:id', async (req: Request, res: Response) => {
             pokemon: pokemon
         });
     } catch (error) {
-        console.error('포켓몬 상세 조회 실패:', error);
+        logger.error('포켓몬 상세 조회 실패:', error);
         res.status(500).render('error', {
             title: '서버 오류',
             error: '포켓몬 정보를 불러오는 중 오류가 발생했습니다.'
@@ -133,7 +134,7 @@ router.get('/pokemon/search/name/:name', async (req: Request, res: Response) => 
             }
         });
     } catch (error) {
-        console.error('포켓몬 검색 실패:', error);
+        logger.error('포켓몬 검색 실패:', error);
         res.status(500).render('error', {
             title: '검색 오류',
             error: '포켓몬 검색 중 오류가 발생했습니다.'
@@ -160,7 +161,7 @@ router.get('/pokemon/type/:type', async (req: Request, res: Response) => {
             }
         });
     } catch (error) {
-        console.error('타입별 포켓몬 조회 실패:', error);
+        logger.error('타입별 포켓몬 조회 실패:', error);
         res.status(500).render('error', {
             title: '조회 오류',
             error: '타입별 포켓몬 조회 중 오류가 발생했습니다.'

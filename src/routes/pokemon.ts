@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { PokemonService, PokemonQuery } from '../services/pokemonService';
 import { getDatabase } from '../database/connection';
+import logger from '../config/logger';
 
 const router = Router();
 const pokemonService = new PokemonService(getDatabase());
@@ -86,7 +87,7 @@ router.get('/', async (req: Request, res: Response) => {
             }
         });
     } catch (error) {
-        console.error('포켓몬 목록 조회 실패:', error);
+        logger.error('포켓몬 목록 조회 실패:', error);
         res.status(500).json({
             success: false,
             error: '포켓몬 목록을 조회하는 중 오류가 발생했습니다.'
@@ -159,7 +160,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             data: pokemon
         });
     } catch (error) {
-        console.error('포켓몬 조회 실패:', error);
+        logger.error('포켓몬 조회 실패:', error);
         return res.status(500).json({
             success: false,
             error: '포켓몬을 조회하는 중 오류가 발생했습니다.'
@@ -218,7 +219,7 @@ router.get('/pokedex/:number', async (req: Request, res: Response) => {
             data: pokemon
         });
     } catch (error) {
-        console.error('포켓몬 조회 실패:', error);
+        logger.error('포켓몬 조회 실패:', error);
         return res.status(500).json({
             success: false,
             error: '포켓몬을 조회하는 중 오류가 발생했습니다.'
@@ -276,7 +277,7 @@ router.get('/search/name/:name', async (req: Request, res: Response) => {
             count: pokemon.length
         });
     } catch (error) {
-        console.error('포켓몬 검색 실패:', error);
+        logger.error('포켓몬 검색 실패:', error);
         res.status(500).json({
             success: false,
             error: '포켓몬을 검색하는 중 오류가 발생했습니다.'
@@ -334,7 +335,7 @@ router.get('/type/:type', async (req: Request, res: Response) => {
             count: pokemon.length
         });
     } catch (error) {
-        console.error('타입별 포켓몬 조회 실패:', error);
+        logger.error('타입별 포켓몬 조회 실패:', error);
         res.status(500).json({
             success: false,
             error: '타입별 포켓몬을 조회하는 중 오류가 발생했습니다.'
@@ -372,7 +373,7 @@ router.get('/stats/overview', async (_req: Request, res: Response) => {
             data: stats
         });
     } catch (error) {
-        console.error('포켓몬 통계 조회 실패:', error);
+        logger.error('포켓몬 통계 조회 실패:', error);
         res.status(500).json({
             success: false,
             error: '포켓몬 통계를 조회하는 중 오류가 발생했습니다.'
