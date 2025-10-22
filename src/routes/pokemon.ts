@@ -1,10 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { PokemonService, PokemonQuery } from '../services/pokemonService';
-import { getDatabase } from '../database/connection';
+import { AppDataSource } from '../database/connection';
+import { Pokemon } from '../entities/Pokemon';
 import logger from '../config/logger';
 
 const router = Router();
-const pokemonService = new PokemonService(getDatabase());
+const pokemonRepository = AppDataSource.getRepository(Pokemon);
+const pokemonService = new PokemonService(pokemonRepository);
 
 /**
  * @swagger

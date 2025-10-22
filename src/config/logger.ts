@@ -4,12 +4,6 @@ import { Logger } from 'tslog';
 const logger = new Logger({
     name: 'pokemon-api',
     minLevel: 0, // 모든 레벨의 로그 출력
-    displayDateTime: true,
-    displayFunctionName: false,
-    displayFilePath: 'hidden',
-    displayLineNumber: false,
-    dateTimeTimezone: 'Asia/Seoul',
-    dateTimeFormat: 'YYYY-MM-DD HH:mm:ss.SSS',
     stylePrettyLogs: true,
     prettyLogTemplate: '{{yyyy}}.{{mm}}.{{dd}} {{hh}}:{{MM}}:{{ss}}.{{ms}}\t{{logLevelName}}\t[{{name}}]\t',
     prettyErrorTemplate: '\n{{errorName}} {{errorMessage}}\nerror stack:\n{{errorStack}}',
@@ -34,18 +28,6 @@ const logger = new Logger({
         nameWithDelimiterSuffix: ['white', 'bold'],
         errorName: ['bold', 'bgRedBright', 'white'],
         fileName: ['yellow'],
-        methodName: ['cyan'],
-        propertyName: ['cyan', 'bold'],
-        parameterName: ['white'],
-        parameterType: ['white', 'bold'],
-        parameterValue: ['greenBright'],
-        propertyKey: ['cyan', 'bold'],
-        stringValue: ['green'],
-        numberValue: ['blue'],
-        booleanValue: ['magenta'],
-        otherValue: ['blue'],
-        bracket: ['white'],
-        errorStack: ['grey'],
     },
 });
 

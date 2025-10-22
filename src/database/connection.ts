@@ -1,101 +1,17 @@
-import sqlite3 from 'sqlite3';
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
 import path from 'path';
-import logger from '../config/logger';
 
-// SQLite3 데이터베이스 연결 클래스
-export class DatabaseConnection {
-    private db: sqlite3.Database | null = null;
-    private dbPath: string;
+// 테스트 환경용 데이터베이스 설정
+const isTest = process.env.NODE_ENV === 'test';
+const databasePath = isTest ? 'db/test-pokedex.db' : 'db/pokedex.db';
 
-    constructor(dbPath: string = 'db/pokedex.db') {
-        this.dbPath = path.resolve(dbPath);
-    }
-
-    // 데이터베이스 연결
-    async connect(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.db = new sqlite3.Database(this.dbPath, (err) => {
-                if (err) {
-                    logger.error('데이터베이스 연결 실패:', err);
-                    reject(err);
-                } else {
-                    logger.info(`데이터베이스 연결 성공: ${this.dbPath}`);
-                    resolve();
-                }
-            });
-        });
-    }
-
-    // 데이터베이스 연결 해제
-    async disconnect(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.db) {
-                this.db.close((err) => {
-                    if (err) {
-                        logger.error('데이터베이스 연결 해제 실패:', err);
-                        reject(err);
-                    } else {
-                        logger.info('데이터베이스 연결 해제 성공');
-                        this.db = null;
-                        resolve();
-                    }
-                });
-            } else {
-                resolve();
-            }
-        });
-    }
-
-    // 쿼리 실행 (SELECT)
-    async query(sql: string, params: any[] = []): Promise<any[]> {
-        if (!this.db) {
-            throw new Error('데이터베이스가 연결되지 않았습니다.');
-        }
-
-        return new Promise((resolve, reject) => {
-            this.db!.all(sql, params, (err, rows) => {
-                if (err) {
-                    logger.error('쿼리 실행 실패:', err);
-                    reject(err);
-                } else {
-                    resolve(rows);
-                }
-            });
-        });
-    }
-
-    // 단일 행 조회
-    async get(sql: string, params: any[] = []): Promise<any> {
-        if (!this.db) {
-            throw new Error('데이터베이스가 연결되지 않았습니다.');
-        }
-
-        return new Promise((resolve, reject) => {
-            this.db!.get(sql, params, (err, row) => {
-                if (err) {
-                    logger.error('쿼리 실행 실패:', err);
-                    reject(err);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
-    }
-
-    // 연결 상태 확인
-    isConnected(): boolean {
-        return this.db !== null;
-    }
-}
-
-// 싱글톤 인스턴스
-let dbInstance: DatabaseConnection | null = null;
-
-export const getDatabase = (): DatabaseConnection => {
-    if (!dbInstance) {
-        dbInstance = new DatabaseConnection();
-    }
-    return dbInstance;
-};
-
-export default DatabaseConnection;
+export const AppDataSource = new DataSource({
+    type: 'sqlite',
+    database: path.resolve(databasePath),
+    synchronize: false, // 자동 스키마 동기화 비활성화
+    logging: process.env.NODE_ENV === 'development',
+    entities: [path.join(__dirname, '../entities/**/*.{ts,js}')],
+    migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
+    subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
+});

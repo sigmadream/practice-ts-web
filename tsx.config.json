@@ -1,0 +1,7 @@
+{
+  "tsx": {
+    "tsconfig": "./tsconfig.base.json",
+    "experimentalLoader": true,
+    "conditions": ["node", "import"]
+  }
+}
