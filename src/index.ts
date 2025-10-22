@@ -1,8 +1,9 @@
+import 'reflect-metadata';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import apiRoutes from './routes/api';
 import webRoutes from './routes/web';
-import { getDatabase } from './database/connection';
+import { AppDataSource } from './database/connection';
 import { setupSwagger } from './config/swagger';
 import logger from './config/logger';
 
@@ -59,15 +60,19 @@ app.use((req: Request, res: Response) => {
 async function startServer() {
     try {
         // 데이터베이스 연결
-        await getDatabase().connect();
+        await AppDataSource.initialize();
+        logger.info('Data Source has been initialized!');
 
         // 서버 시작
         app.listen(PORT, () => {
             logger.info(`http://localhost:${PORT} 에서 실행 중입니다.`);
         });
     } catch (error) {
-        logger.error('서버 시작 실패:', error);
-        process.exit(1);
+        logger.error('Error during Data Source initialization:', error);
+        if (process.env.NODE_ENV !== 'test') {
+            process.exit(1);
+        }
+        throw error;
     }
 }
 
@@ -75,7 +80,7 @@ async function startServer() {
 process.on('SIGINT', async () => {
     logger.info('서버를 종료합니다...');
     try {
-        await getDatabase().disconnect();
+        await AppDataSource.destroy();
         logger.info('데이터베이스 연결이 해제되었습니다.');
         process.exit(0);
     } catch (error) {
@@ -84,6 +89,9 @@ process.on('SIGINT', async () => {
     }
 });
 
-startServer();
+// 테스트 환경이 아닐 때만 서버 시작
+if (process.env.NODE_ENV !== 'test') {
+    startServer();
+}
 
 export default app;

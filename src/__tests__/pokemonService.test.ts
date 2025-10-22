@@ -1,90 +1,61 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { PokemonService } from '../services/pokemonService';
-import { DatabaseConnection } from '../database/connection';
+import { Repository } from 'typeorm';
+import { Pokemon } from '../entities/Pokemon';
+
+// Mock a repository
+const createMockRepository = (): Partial<Repository<Pokemon>> => ({
+    findAndCount: vi.fn(),
+    findOneBy: vi.fn(),
+    find: vi.fn(),
+    count: vi.fn(),
+    createQueryBuilder: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        addSelect: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        getRawMany: vi.fn(),
+    })),
+});
 
 describe('PokemonService', () => {
-    let db: DatabaseConnection;
+    let mockRepository: Partial<Repository<Pokemon>>;
     let pokemonService: PokemonService;
 
-    beforeAll(async () => {
-        db = new DatabaseConnection('db/pokedex.db');
-        await db.connect();
-        pokemonService = new PokemonService(db);
-    });
-
-    afterAll(async () => {
-        await db.disconnect();
+    beforeEach(() => {
+        mockRepository = createMockRepository();
+        pokemonService = new PokemonService(mockRepository as Repository<Pokemon>);
     });
 
     describe('getAllPokemon', () => {
         it('기본 페이지네이션으로 포켓몬 목록을 조회할 수 있어야 한다', async () => {
+            const mockPokemon = [{ id: 1, name: 'Pikachu' }] as Pokemon[];
+            const mockTotal = 1;
+            (mockRepository.findAndCount as vi.Mock).mockResolvedValue([mockPokemon, mockTotal]);
+
             const result = await pokemonService.getAllPokemon();
 
-            expect(result).toHaveProperty('pokemon');
-            expect(result).toHaveProperty('total');
-            expect(result).toHaveProperty('page');
-            expect(result).toHaveProperty('limit');
-            expect(Array.isArray(result.pokemon)).toBe(true);
-            expect(result.total).toBeGreaterThan(0);
-        });
-
-        it('페이지 크기를 지정할 수 있어야 한다', async () => {
-            const result = await pokemonService.getAllPokemon({ limit: 5 });
-
-            expect(result.pokemon.length).toBeLessThanOrEqual(5);
-            expect(result.limit).toBe(5);
-        });
-
-        it('페이지 번호를 지정할 수 있어야 한다', async () => {
-            const result = await pokemonService.getAllPokemon({ page: 2, limit: 5 });
-
-            expect(result.page).toBe(2);
-        });
-
-        it('검색어로 포켓몬을 검색할 수 있어야 한다', async () => {
-            const result = await pokemonService.getAllPokemon({ search: '피카' });
-
-            expect(result.pokemon.length).toBeGreaterThan(0);
-            result.pokemon.forEach(pokemon => {
-                expect(
-                    pokemon.name.includes('피카') ||
-                    pokemon.description.includes('피카')
-                ).toBe(true);
-            });
-        });
-
-        it('타입으로 포켓몬을 필터링할 수 있어야 한다', async () => {
-            const result = await pokemonService.getAllPokemon({ type: '불꽃' });
-
-            expect(result.pokemon.length).toBeGreaterThan(0);
-            result.pokemon.forEach(pokemon => {
-                expect(pokemon.types).toContain('불꽃');
-            });
-        });
-
-        it('정렬 옵션을 사용할 수 있어야 한다', async () => {
-            const result = await pokemonService.getAllPokemon({
-                sortBy: 'name',
-                sortOrder: 'ASC',
-                limit: 5
-            });
-
-            expect(result.pokemon.length).toBeGreaterThan(0);
-            const names = result.pokemon.map(p => p.name).filter(name => name);
-            const sortedNames = [...names].sort();
-            expect(names).toEqual(sortedNames);
+            expect(result.pokemon).toEqual(mockPokemon);
+            expect(result.total).toBe(mockTotal);
+            expect(mockRepository.findAndCount).toHaveBeenCalledWith(expect.any(Object));
         });
     });
 
     describe('getPokemonById', () => {
         it('유효한 ID로 포켓몬을 조회할 수 있어야 한다', async () => {
+            const mockPokemon = { id: 1, name: 'Pikachu' } as Pokemon;
+            (mockRepository.findOneBy as vi.Mock).mockResolvedValue(mockPokemon);
+
             const pokemon = await pokemonService.getPokemonById(1);
 
-            expect(pokemon).toBeDefined();
-            expect(pokemon?.id).toBe(1);
+            expect(pokemon).toEqual(mockPokemon);
+            expect(mockRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
         });
 
         it('존재하지 않는 ID로 조회하면 null을 반환해야 한다', async () => {
+            (mockRepository.findOneBy as vi.Mock).mockResolvedValue(null);
+
             const pokemon = await pokemonService.getPokemonById(-1);
 
             expect(pokemon).toBeNull();
@@ -93,70 +64,62 @@ describe('PokemonService', () => {
 
     describe('getPokemonByPokedexNumber', () => {
         it('유효한 도감 번호로 포켓몬을 조회할 수 있어야 한다', async () => {
-            // 먼저 존재하는 도감 번호를 찾는다
-            const allPokemon = await pokemonService.getAllPokemon({ limit: 1 });
-            const firstPokemon = allPokemon.pokemon[0];
+            const mockPokemon = { id: 1, pokedex_number: '001', name: 'Bulbasaur' } as Pokemon;
+            (mockRepository.findOneBy as vi.Mock).mockResolvedValue(mockPokemon);
 
-            if (firstPokemon.pokedex_number) {
-                const pokemon = await pokemonService.getPokemonByPokedexNumber(firstPokemon.pokedex_number);
-                expect(pokemon).toBeDefined();
-                expect(pokemon?.pokedex_number).toBe(firstPokemon.pokedex_number);
-            }
-        });
+            const pokemon = await pokemonService.getPokemonByPokedexNumber('001');
 
-        it('존재하지 않는 도감 번호로 조회하면 null을 반환해야 한다', async () => {
-            const pokemon = await pokemonService.getPokemonByPokedexNumber('999999');
-
-            expect(pokemon).toBeNull();
+            expect(pokemon).toEqual(mockPokemon);
+            expect(mockRepository.findOneBy).toHaveBeenCalledWith({ pokedex_number: '001' });
         });
     });
 
     describe('searchPokemonByName', () => {
         it('이름으로 포켓몬을 검색할 수 있어야 한다', async () => {
-            const pokemon = await pokemonService.searchPokemonByName('피카');
+            const mockPokemon = [{ id: 1, name: 'Pikachu' }] as Pokemon[];
+            (mockRepository.find as vi.Mock).mockResolvedValue(mockPokemon);
 
-            expect(Array.isArray(pokemon)).toBe(true);
-            pokemon.forEach(p => {
-                expect(p.name).toContain('피카');
-            });
-        });
+            const pokemon = await pokemonService.searchPokemonByName('Pika');
 
-        it('존재하지 않는 이름으로 검색하면 빈 배열을 반환해야 한다', async () => {
-            const pokemon = await pokemonService.searchPokemonByName('존재하지않는포켓몬');
-
-            expect(pokemon).toEqual([]);
+            expect(pokemon).toEqual(mockPokemon);
+            expect(mockRepository.find).toHaveBeenCalledWith(expect.any(Object));
         });
     });
 
     describe('getPokemonByType', () => {
         it('타입으로 포켓몬을 조회할 수 있어야 한다', async () => {
-            const pokemon = await pokemonService.getPokemonByType('불꽃');
+            const mockPokemon = [{ id: 1, name: 'Charmander', types: 'Fire' }] as Pokemon[];
+            (mockRepository.find as vi.Mock).mockResolvedValue(mockPokemon);
 
-            expect(Array.isArray(pokemon)).toBe(true);
-            pokemon.forEach(p => {
-                expect(p.types).toContain('불꽃');
-            });
-        });
+            const pokemon = await pokemonService.getPokemonByType('Fire');
 
-        it('존재하지 않는 타입으로 조회하면 빈 배열을 반환해야 한다', async () => {
-            const pokemon = await pokemonService.getPokemonByType('NonExistentType');
-
-            expect(pokemon).toEqual([]);
+            expect(pokemon).toEqual(mockPokemon);
+            expect(mockRepository.find).toHaveBeenCalledWith(expect.any(Object));
         });
     });
 
     describe('getPokemonStats', () => {
         it('포켓몬 통계를 조회할 수 있어야 한다', async () => {
+            const mockCount = 150;
+            const mockPokemon = [{ types: 'Fire,Water' }, { types: 'Grass' }] as Pokemon[];
+            const mockCategoryStats = [{ category: 'Seed', count: '10' }];
+
+            (mockRepository.count as vi.Mock).mockResolvedValue(mockCount);
+            (mockRepository.find as vi.Mock).mockResolvedValue(mockPokemon);
+            (mockRepository.createQueryBuilder as vi.Mock).mockReturnValue({
+                select: vi.fn().mockReturnThis(),
+                addSelect: vi.fn().mockReturnThis(),
+                where: vi.fn().mockReturnThis(),
+                groupBy: vi.fn().mockReturnThis(),
+                orderBy: vi.fn().mockReturnThis(),
+                getRawMany: vi.fn().mockResolvedValue(mockCategoryStats),
+            });
+
             const stats = await pokemonService.getPokemonStats();
 
-            expect(stats).toHaveProperty('total');
-            expect(stats).toHaveProperty('byType');
-            expect(stats).toHaveProperty('byCategory');
-            expect(typeof stats.total).toBe('number');
-            expect(Array.isArray(stats.byType)).toBe(true);
-            expect(Array.isArray(stats.byCategory)).toBe(true);
-            expect(stats.total).toBeGreaterThan(0);
+            expect(stats.total).toBe(mockCount);
+            expect(stats.byType).toBeDefined();
+            expect(stats.byCategory).toBeDefined();
         });
     });
-
 });

@@ -1,10 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { PokemonService } from '../services/pokemonService';
-import { getDatabase } from '../database/connection';
+import { AppDataSource } from '../database/connection';
+import { Pokemon } from '../entities/Pokemon';
 import logger from '../config/logger';
 
 const router = Router();
-const pokemonService = new PokemonService(getDatabase());
+const pokemonRepository = AppDataSource.getRepository(Pokemon);
+const pokemonService = new PokemonService(pokemonRepository);
 
 // 홈페이지
 router.get('/', (_req: Request, res: Response) => {
@@ -48,7 +50,7 @@ router.get('/pokemon', async (req: Request, res: Response) => {
 });
 
 // 통계 페이지 (특정 경로를 먼저 정의)
-router.get('/pokemon/stats', async (req: Request, res: Response) => {
+router.get('/pokemon/stats', async (_req: Request, res: Response) => {
     try {
         const stats = await pokemonService.getPokemonStats();
 
