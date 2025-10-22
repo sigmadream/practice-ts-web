@@ -5,7 +5,21 @@ import pokemonRoutes from './pokemon';
 
 const router = Router();
 
-// 헬스 체크
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: 헬스 체크
+ *     description: 서버 상태를 확인합니다.
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: 서버가 정상 작동 중
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthCheck'
+ */
 router.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'OK',
@@ -15,7 +29,21 @@ router.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-// API 정보
+/**
+ * @swagger
+ * /api/info:
+ *   get:
+ *     summary: API 정보
+ *     description: API 서버의 기본 정보를 반환합니다.
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: API 정보 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiInfo'
+ */
 router.get('/info', (_req: Request, res: Response) => {
   res.json({
     name: 'Express.js 5.0 TypeScript API',

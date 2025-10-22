@@ -3,6 +3,7 @@ import cors from 'cors';
 import apiRoutes from './routes/api';
 import webRoutes from './routes/web';
 import { getDatabase } from './database/connection';
+import { setupSwagger } from './config/swagger';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,9 @@ app.get('/', (_req: Request, res: Response) => {
         title: '포켓몬 API - 홈'
     });
 });
+
+// Swagger 설정
+setupSwagger(app);
 
 // 라우터 설정
 app.use('/api', apiRoutes);

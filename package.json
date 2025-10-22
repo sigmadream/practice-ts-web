@@ -24,8 +24,8 @@
     "@types/express": "^5.0.3",
     "@types/node": "24.3.1",
     "@types/pug": "^2.0.6",
-    "@types/supertest": "^6.0.3",
     "@types/sqlite3": "^3.1.11",
+    "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^3.2.4",
     "prettier": "3.6.0",
     "supertest": "^7.1.4",
@@ -35,9 +35,13 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "sqlite3": "^5.1.7",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "pug": "^3.0.2",
-    "cors": "^2.8.5"
+    "sqlite3": "^5.1.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

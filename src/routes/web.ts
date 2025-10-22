@@ -64,12 +64,6 @@ router.get('/pokemon/stats', async (req: Request, res: Response) => {
     }
 });
 
-// API 문서 페이지
-router.get('/docs', (_req: Request, res: Response) => {
-    res.render('api-docs', {
-        title: 'API 문서'
-    });
-});
 
 // 시스템 상태 페이지
 router.get('/health', (_req: Request, res: Response) => {
